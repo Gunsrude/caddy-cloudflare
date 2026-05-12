@@ -1,0 +1,27 @@
+# ============================================================
+# Caddyfile — reverse proxy with Cloudflare DNS-01 TLS
+#
+# Customization checklist:
+#   1. Replace example.com with your domain(s)
+#   2. Replace web:80 with the actual service name and port
+#      (must be on the same Docker network as Caddy)
+# ============================================================
+
+example.com {
+    # Enable HTTPS automatically via ACME (Cloudflare DNS-01)
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+
+    # Reverse proxy to the target service on the Docker network
+    reverse_proxy web:80
+}
+
+# Add additional site blocks below for other services, e.g.:
+#
+# apps.example.com {
+#     tls {
+#         dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+#     }
+#     reverse_proxy myapp:3000
+# }

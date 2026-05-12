@@ -1,0 +1,9 @@
+# Environment & Caddy
+.env
+Caddyfile
+
+# OS
+.DS_Store
+
+# Node (if used locally for development)
+node_modules/
