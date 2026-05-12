@@ -2,7 +2,6 @@ FROM golang:alpine AS builder
 
 RUN apk add --no-cache git && \
     go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest && \
-    cd $(go env GOPATH)/src/github.com/caddyserver/xcaddy && \
     xcaddy build --with github.com/caddy-dns/cloudflare --output /go/bin/caddy
 
 FROM alpine:latest
