@@ -15,7 +15,7 @@ ENV CLOUDFLARE_DNS_API_TOKEN=""
 COPY --from=builder /go/bin/caddy /usr/bin/caddy
 
 RUN addgroup -S caddy && adduser -S -G caddy caddy && \
-    mkdir -p /config/caddy /data/caddy /etc/caddy && \
+    mkdir -p /config /data /etc/caddy && \
     chown -R caddy:caddy /config /data /etc/caddy
 
 USER caddy

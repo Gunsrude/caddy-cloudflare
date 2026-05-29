@@ -11,9 +11,9 @@ services:
       # Cloudflare API token for DNS-01 ACME challenges
       - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data/caddy
-      - caddy_config:/config/caddy
+      - ./conf:/etc/caddy
+      - caddy_data:/data
+      - caddy_config:/config
     cap_drop:
       - ALL
     cap_add:

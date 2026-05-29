@@ -19,7 +19,7 @@ This image runs Caddy as a reverse proxy in front of your other Docker container
 
 2. **Customize the Caddyfile**
 
-   Edit `Caddyfile` to match your domain(s) and upstream services. Each block should point to a container name on your Docker network (e.g., `web:80`, `grafana:3000`).
+    Edit `conf/Caddyfile` to match your domain(s) and upstream services. Each block should point to a container name on your Docker network (e.g., `web:80`, `grafana:3000`).
 
 3. **Start with docker-compose**
 
@@ -50,7 +50,7 @@ Both `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_DNS_API_TOKEN` are supported — use
 
 ## Customizing the Caddyfile
 
-The mounted `Caddyfile` is the main configuration point. Each site block maps to a domain and proxies to an upstream service:
+The mounted `conf/Caddyfile` is the main configuration point. Each site block maps to a domain and proxies to an upstream service:
 
 ```
 myapp.example.com {
@@ -70,3 +70,23 @@ docker compose restart caddy
 ## Docker network note
 
 Upstream services (the targets of `reverse_proxy`) must be on the same Docker network as Caddy so they can be resolved by container name. The example compose file assumes this — adjust if you're using custom networks.
+
+## Directory structure
+
+This project follows official Caddy Docker conventions:
+
+```
+caddy-cloudflare/
+├── conf/                  # Configuration directory (mounted at /etc/caddy)
+│   └── Caddyfile         # Your Caddy configuration
+├── docker-compose.yml     # Or use docker-compose.yml.example as template
+├── Dockerfile            # Custom Caddy build with Cloudflare module
+└── .env                  # Environment variables (CLOUDFLARE_API_TOKEN)
+```
+
+**Volume mounts:**
+- `./conf:/etc/caddy` - Configuration files (folder mount)
+- `caddy_data:/data` - TLS certificates, keys, OCSP staples (MUST persist)
+- `caddy_config:/config` - autosave.json and runtime config (optional to persist)
+
+We mount the entire `conf/` folder instead of a single file so Caddy can access any additional configuration files you might add (like templates or includes), matching the official Caddy image convention.

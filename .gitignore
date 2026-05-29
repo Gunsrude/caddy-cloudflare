@@ -1,6 +1,5 @@
-# Environment & Caddy
+# Environment
 .env
-Caddyfile
 
 # OS
 .DS_Store
