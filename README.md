@@ -6,6 +6,16 @@ A custom Caddy Docker image compiled with the [Cloudflare DNS-01](https://github
 
 This image runs Caddy as a reverse proxy in front of your other Docker containers, handling HTTPS automatically using Cloudflare's DNS API to complete ACME DNS-01 challenges.
 
+## Prebuilt image
+
+A prebuilt image is published to the GitHub Container Registry on every push to `main` and on version tags:
+
+```bash
+docker pull ghcr.io/gunsrude/caddy-cloudflare:latest
+```
+
+The quick start below builds the image from source instead.
+
 ## Quick start
 
 1. **Clone and configure**

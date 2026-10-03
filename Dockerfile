@@ -1,18 +1,21 @@
-FROM golang:alpine AS builder
+FROM golang:1.27-alpine AS builder
 
-RUN apk add --no-cache git && \
-    go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest && \
-    xcaddy build --with github.com/caddy-dns/cloudflare --output /go/bin/caddy
+RUN apk add --no-cache git
 
-FROM alpine:latest
+RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@v0.4.7
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN xcaddy build v2.11.7 \
+    --with github.com/caddy-dns/cloudflare@v0.2.4 \
+    --output /go/bin/caddy
 
-# Cloudflare DNS-01 credentials (pass at runtime via -e or docker-compose)
-ENV CLOUDFLARE_API_TOKEN=""
-ENV CLOUDFLARE_DNS_API_TOKEN=""
+FROM alpine:3.24
+
+RUN apk add --no-cache ca-certificates tzdata libcap
 
 COPY --from=builder /go/bin/caddy /usr/bin/caddy
+
+# Allow the non-root caddy user to bind ports 80/443
+RUN setcap 'cap_net_bind_service=+ep' /usr/bin/caddy
 
 RUN addgroup -S caddy && adduser -S -G caddy caddy && \
     mkdir -p /config /data /etc/caddy && \
