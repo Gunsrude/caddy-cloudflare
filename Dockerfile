@@ -1,1 +1,28 @@
-RlJPTSBnb2xhbmc6MS4yNy1hbHBpbmUgQVMgYnVpbGRlcgoKUlVOIGFwayBhZGQgLS1uby1jYWNoZSBnaXQKClJVTiBnbyBpbnN0YWxsIGdpdGh1Yi5jb20vY2FkZHlzZXJ2ZXIveGNhZGR5L2NtZC94Y2FkZHlAdjAuNC43CgpSVU4geGNhZGR5IGJ1aWxkIHYyLjExLjcgXAogICAgLS13aXRoIGdpdGh1Yi5jb20vY2FkZHktZG5zL2Nsb3VkZmxhcmVAdjAuMi40IFwKICAgIC0tb3V0cHV0IC9nby9iaW4vY2FkZHkKCkZST00gYWxwaW5lOjMuMjQKClJVTiBhcGsgYWRkIC0tbm8tY2FjaGUgY2EtY2VydGlmaWNhdGVzIHR6ZGF0YSBsaWJjYXAKCkNPUFkgLS1mcm9tPWJ1aWxkZXIgL2dvL2Jpbi9jYWRkeSAvdXNyL2Jpbi9jYWRkeQoKIyBBbGxvdyB0aGUgbm9uLXJvb3QgY2FkZHkgdXNlciB0byBiaW5kIHBvcnRzIDgwLzQ0MwpSVU4gc2V0Y2FwICdjYXBfbmV0X2JpbmRfc2VydmljZT0rZXAnIC91c3IvYmluL2NhZGR5CgpSVU4gYWRkZ3JvdXAgUyBjYWRkeSAmJiBhZGR1c2VyIFMgLUcgY2FkZHkgY2FkZHkgJiYgXAogICAgbWtkaXIgLXAgL2NvbmZpZyAvZGF0YSAvZXRjL2NhZGR5ICYmIFwKICAgIGNob3duIC1SIGNhZGR5OmNhZGR5IC9jb25maWcgL2RhdGEgL2V0Yy9jYWRkeQoKVVNFUiBjYWRkeQoKRVhQT1NFIDgwIDQ0MyA0NDMvdWRwCgpDTUQgWyJjYWRkeSIsICJydW4iLCAiLS1jb25maWciLCAiL2V0Yy9jYWRkeS9DYWRkeWZpbGUiLCAiLS1hZGFwdGVyIiwgImNhZGR5ZmlsZSJdCg==
+FROM golang:1.27-alpine AS builder
+
+RUN apk add --no-cache git
+
+RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@v0.4.7
+
+RUN xcaddy build v2.11.7 \
+    --with github.com/caddy-dns/cloudflare@v0.2.4 \
+    --output /go/bin/caddy
+
+FROM alpine:3.24
+
+RUN apk add --no-cache ca-certificates tzdata libcap
+
+COPY --from=builder /go/bin/caddy /usr/bin/caddy
+
+# Allow the non-root caddy user to bind ports 80/443
+RUN setcap 'cap_net_bind_service=+ep' /usr/bin/caddy
+
+RUN addgroup -S caddy && adduser -S -G caddy caddy && \
+    mkdir -p /config /data /etc/caddy && \
+    chown -R caddy:caddy /config /data /etc/caddy
+
+USER caddy
+
+EXPOSE 80 443 443/udp
+
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
